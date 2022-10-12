@@ -1,0 +1,64 @@
+ARG BASE_IMAGE=ubuntu:20.04
+FROM ${BASE_IMAGE}
+
+ENV DEBIAN_FRONTEND=noninteractive
+
+RUN apt-get update && apt-get install -y apt-utils
+RUN apt-get install -y git
+RUN apt-get install -y unzip
+RUN apt-get install -y file
+RUN apt-get install -y lsof
+RUN apt-get install -y build-essential
+RUN apt-get install -y pkg-config
+RUN apt-get install -y mingw-w64
+RUN apt-get install -y libpcap-dev
+RUN apt-get install -y libappindicator3-dev
+RUN apt-get install -y libwebkit2gtk-4.0-dev
+RUN apt-get install -y ruby
+RUN apt-get install -y ruby-dev
+RUN apt-get install -y osslsigncode
+RUN apt-get install -y nsis
+RUN apt-get install -y curl
+RUN curl -s https://packagecloud.io/install/repositories/github/git-lfs/script.deb.sh | bash
+RUN apt-get install -y git-lfs
+
+# The fpm packer. (https://rubygems.org/gems/fpm)
+RUN gem install bundler
+
+RUN git config --global url."https://71cee071ea22b7ffb10f68fa330d1130133bbfbd:x-oauth-basic@github.com/".insteadOf "https://github.com/"
+
+ARG GOVERSION=1.18
+ARG GOARCH=amd64
+ARG CLANGVERSION=llvmorg-16-init-907-g8b740747-1
+ARG CRONETVERSION=v106.0.5249.91-2
+RUN echo "Fetching Go version $GOVERSION for $GOARCH"
+RUN rm -rf /usr/local/go
+RUN curl -sSL https://storage.googleapis.com/golang/go$GOVERSION.linux-$GOARCH.tar.gz | tar -xvzf - -C /usr/local
+RUN curl -sSL https://commondatastorage.googleapis.com/chromium-browser-clang/Linux_x64/clang-$CLANGVERSION.tgz  | tar -xvzf - -C /usr/local
+RUN curl -sSL https://github.com/klzgrad/naiveproxy/releases/download/$CRONETVERSION/cronet-$CRONETVERSION-linux-x64.tar.xz | tar -xvJf - -C /usr/local
+RUN rm /tmp/cronet-$CRONETVERSION-linux-x64.zip
+
+
+# Environment variables
+ENV PATH /usr/local/go/bin:$PATH
+ENV GOPATH /go
+ENV GOPRIVATE github.com/getlantern
+
+CGO Environment Linux amd64
+RUN ln -s /usr/local/cronet-$CRONETVERSION-linux-x64 /usr/local/cronet
+ENV CGO_CFLAGS --sysroot=/usr/local/cronet/sysroot -m64 -msse3
+ENV CGO_LDFLAGS -pie --sysroot=/usr/local/cronet/sysroot -fuse-ld=lld -m64 -L/usr/local/cronet
+ENV CC clang
+ENV CGO_ENABLED 1
+ENV CGO_LDFLAGS_ALLOW .*
+
+# Just make sure go is properly installed.
+RUN go version
+
+# For trafficlog
+RUN git lfs install
+
+# Expect the $WORKDIR volume to be mounted.
+ENV WORKDIR /lantern
+VOLUME [ "$WORKDIR" ]
+WORKDIR $WORKDIR
