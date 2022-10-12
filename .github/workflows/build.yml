@@ -3,10 +3,13 @@ on:
   push:
     branches: [main]
     paths-ignore: [README.md]
+  workflow_dispatch:
 defaults:
   run:
     shell: bash
 env:
+  CLANGVERSION: clang-llvmorg-16-init-907-g8b740747-1
+  CRONETVERSION: v106.0.5249.91-2
 jobs:
   win:
     runs-on: windows-2019
@@ -15,18 +18,27 @@ jobs:
       matrix:
         arch: [x64]
     env:
-      CLANGVERSION: clang-llvmorg-16-init-907-g8b740747-1
-      CRONETVERSION: v106.0.5249.91-2
+      CGO_CFLAGS: -m64 -msse3
+      CGO_LDFLAGS: -pie -fuse-ld=lld -m64 -LC:\cronet
+      CC: clang
+      CGO_ENABLED: 1
+      CGO_LDFLAGS_ALLOW: .*
+      CLANG_INSTALL_PATH: /c/Program Files/LLVM/
     steps:
       - uses: actions/checkout@v2
       - uses: actions/setup-go@v3
         with:
           go-version: '^1.18.1'
-      - run: curl -sSL https://commondatastorage.googleapis.com/chromium-browser-clang/Win/$CLANGVERSION.tgz  | tar -xvzf - -C /usr/local
+      - run: |
+          git config --global url."https://${{ secrets.GH_TOKEN }}:x-oauth-basic@github.com/".insteadOf "https://github.com/"
+      - run: curl -sSL https://commondatastorage.googleapis.com/chromium-browser-clang/Win/$CLANGVERSION.tgz  | tar -xvzf - -C "$CLANG_INSTALL_PATH"
       - run: curl -sSL https://github.com/klzgrad/naiveproxy/releases/download/$CRONETVERSION/cronet-$CRONETVERSION-win-x64.zip -o /tmp/cronet-$CRONETVERSION-win-x64.zip
-      - run: unzip /tmp/cronet-$CRONETVERSION-linux-x64.zip -d /usr/local
-      - run: GOOS=windows GOARCH=amd64 go build -x -v . -o cro.exe
+      - run: unzip /tmp/cronet-$CRONETVERSION-win-x64.zip -d /c/
+      - run: mv /c/cronet-$CRONETVERSION-win-x64 /c/cronet
+      - run: mv "${CLANG_INSTALL_PATH}/bin/lld-link.exe" "${CLANG_INSTALL_PATH}/bin/lld-link-old.exe"
+      - run: clang /c/cronet/lld-link.cc -o "${CLANG_INSTALL_PATH}/bin/lld-link.exe"
+      - run: GOOS=windows GOARCH=amd64 go build -x -v -o cromagnon.exe .
       - uses: actions/upload-artifact@v2
         with:
           name: cro
-          path: cro.exe
+          path: cromagnon.exe
