@@ -22,4 +22,4 @@ require (
 	gopkg.in/yaml.v2 v2.4.0 // indirect
 )
 
-replace github.com/sagernet/cronet-go => github.com/getlantern/cronet-go v0.0.0-20221024025644-2b6ff17b9000
+replace github.com/sagernet/cronet-go => github.com/getlantern/cronet-go v0.0.0-20221025125419-0a4b7ac2071c

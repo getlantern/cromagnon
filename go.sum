@@ -5,8 +5,8 @@ github.com/davecgh/go-spew v1.1.1 h1:vj9j/u1bqnvCEfJOwUhtlOARqs3+rkHYY13jYWTU97c
 github.com/davecgh/go-spew v1.1.1/go.mod h1:J7Y8YcW2NihsgmVo/mv3lAwl/skON4iLHjSsI+c5H38=
 github.com/getlantern/context v0.0.0-20190109183933-c447772a6520 h1:NRUJuo3v3WGC/g5YiyF790gut6oQr5f3FBI88Wv0dx4=
 github.com/getlantern/context v0.0.0-20190109183933-c447772a6520/go.mod h1:L+mq6/vvYHKjCX2oez0CgEAJmbq1fbb/oNJIWQkBybY=
-github.com/getlantern/cronet-go v0.0.0-20221024025644-2b6ff17b9000 h1:X3xiSCzsHwp8sOLUv0tbTbwNQz7RRW7W99urfwl0hOw=
-github.com/getlantern/cronet-go v0.0.0-20221024025644-2b6ff17b9000/go.mod h1:knFNW+h+BtbcZwR3hyH4BdV9wtFPfYxy3U8v5XQeKXo=
+github.com/getlantern/cronet-go v0.0.0-20221025125419-0a4b7ac2071c h1:/0qTPMNmbUI4T7qAW0PmHudEHBtMX9xT5pZo/jw1Os8=
+github.com/getlantern/cronet-go v0.0.0-20221025125419-0a4b7ac2071c/go.mod h1:knFNW+h+BtbcZwR3hyH4BdV9wtFPfYxy3U8v5XQeKXo=
 github.com/getlantern/errors v1.0.1 h1:XukU2whlh7OdpxnkXhNH9VTLVz0EVPGKDV5K0oWhvzw=
 github.com/getlantern/errors v1.0.1/go.mod h1:l+xpFBrCtDLpK9qNjxs+cHU6+BAdlBaxHqikB6Lku3A=
 github.com/getlantern/golog v0.0.0-20221014032422-49749a7176cf h1:VLM1gChzNF4KrFRa0BJDo/OnxG9ZDI6JNcNkqz4mZEI=
