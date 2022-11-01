@@ -10,11 +10,11 @@ import (
 )
 
 type ClientOptions struct {
-	Addr               string
-	Path               string
-	PinnedCert         *x509.Certificate
-	InsecureSkipVerify bool
-	UseH3              bool
+	Addr               string            // Host/port to connect to
+	Path               string            // Path on server to request
+	PinnedCert         *x509.Certificate // Only accept this certificate
+	InsecureSkipVerify bool              // If true, don't perform any certificate verification
+	UseH3              bool              // Connect using HTTP/3 instead of HTTP/2 (default)
 }
 
 type Client struct {
@@ -23,16 +23,20 @@ type Client struct {
 	url          string
 }
 
+// NewClient
+// construct a new cromagnon client with the given options
 func NewClient(config *ClientOptions) (*Client, error) {
 
 	engine := cronet.NewEngine()
 	params := cronet.NewEngineParams()
 
-	verifier, err := cronet.CreatePinnedCertVerifier(config.PinnedCert, config.InsecureSkipVerify)
-	if err != nil {
-		return nil, err
+	if config.PinnedCert != nil || config.InsecureSkipVerify {
+		verifier, err := cronet.CreatePinnedCertVerifier(config.PinnedCert, config.InsecureSkipVerify)
+		if err != nil {
+			return nil, err
+		}
+		engine.SetMockCertVerifierForTesting(verifier)
 	}
-	engine.SetMockCertVerifierForTesting(verifier)
 
 	if config.UseH3 {
 		params.SetEnableQuic(true)
@@ -69,6 +73,10 @@ func NewClient(config *ClientOptions) (*Client, error) {
 	return c, nil
 }
 
+// Dial prepares a new net.Conn using the configuration of the client.
+// The result may be a multiplexed connection using a previously
+// established connection or may establish a new connection to
+// the configured server.
 func (c *Client) Dial() (net.Conn, error) {
 	bidiConn := c.streamEngine.CreateConn(true, false)
 	err := bidiConn.Start("GET", c.url, nil, 0, false)
@@ -78,6 +86,8 @@ func (c *Client) Dial() (net.Conn, error) {
 	return bidiConn, nil
 }
 
+// Close closes all connections established with this Client.
+// Dial should not be called after the client is closed.
 func (c *Client) Close() error {
 	c.engine.Shutdown()
 	c.engine.Destroy()
